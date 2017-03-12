@@ -49,13 +49,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
 
-import blissroms.updates.utils.Addon;
 import blissroms.updates.R;
-import blissroms.updates.utils.RomUpdate;
 import blissroms.updates.download.DownloadAddon;
 import blissroms.updates.tasks.AddonXmlParser;
+import blissroms.updates.utils.Addon;
 import blissroms.updates.utils.Constants;
 import blissroms.updates.utils.Preferences;
+import blissroms.updates.utils.RomUpdate;
 import blissroms.updates.utils.Utils;
 import in.uncod.android.bypass.Bypass;
 

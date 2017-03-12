@@ -38,12 +38,12 @@ import android.widget.Toast;
 import android.widget.Toolbar;
 
 import blissroms.updates.R;
-import blissroms.updates.utils.RomUpdate;
 import blissroms.updates.download.DownloadRom;
 import blissroms.updates.download.DownloadRomProgress;
 import blissroms.updates.tasks.GenerateRecoveryScript;
 import blissroms.updates.utils.Constants;
 import blissroms.updates.utils.Preferences;
+import blissroms.updates.utils.RomUpdate;
 import blissroms.updates.utils.Tools;
 import blissroms.updates.utils.Utils;
 

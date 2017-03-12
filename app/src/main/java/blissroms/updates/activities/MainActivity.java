@@ -50,11 +50,11 @@ import java.util.Date;
 import java.util.Locale;
 
 import blissroms.updates.R;
-import blissroms.updates.utils.RomUpdate;
 import blissroms.updates.tasks.Changelog;
 import blissroms.updates.tasks.LoadUpdateManifest;
 import blissroms.updates.utils.Constants;
 import blissroms.updates.utils.Preferences;
+import blissroms.updates.utils.RomUpdate;
 import blissroms.updates.utils.Tools;
 import blissroms.updates.utils.Utils;
 
@@ -62,7 +62,8 @@ public class MainActivity extends Activity implements Constants,
         ActivityCompat.OnRequestPermissionsResultCallback {
 
     private static final int PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
-    private static final boolean ENABLE_COMPATIBILITY_CHECK = true;
+    private static final int CHANGE_THEME_REQUEST_CODE = 2;
+    private static final boolean ENABLE_COMPATIBILITY_CHECK = false;
     public static boolean hasRoot;
     @SuppressLint("StaticFieldLeak")
     private static ProgressBar mProgressBar;
@@ -163,14 +164,6 @@ public class MainActivity extends Activity implements Constants,
                     PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
         }
         new checkRoot().execute("");
-    }
-
-    static class checkRoot extends AsyncTask<String, Integer, String> {
-        @Override
-        protected String doInBackground(String... sUrl) {
-            hasRoot = Tools.isRootAvailable();
-            return null;
-        }
     }
 
     @Override
@@ -509,7 +502,7 @@ public class MainActivity extends Activity implements Constants,
 
     public void openSettings(View v) {
         Intent intent = new Intent(mContext, SettingsActivity.class);
-        startActivity(intent);
+        startActivityForResult(intent, CHANGE_THEME_REQUEST_CODE);
     }
 
     public void openChangelog(View v) {
@@ -522,6 +515,21 @@ public class MainActivity extends Activity implements Constants,
         String title = getResources().getString(R.string.changelog);
         String changelog = getResources().getString(R.string.changelog_url);
         new Changelog(this, mContext, title, changelog, true).execute();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == CHANGE_THEME_REQUEST_CODE) {
+            this.recreate();
+        }
+    }
+
+    static class checkRoot extends AsyncTask<String, Integer, String> {
+        @Override
+        protected String doInBackground(String... sUrl) {
+            hasRoot = Tools.isRootAvailable();
+            return null;
+        }
     }
 
     private class CompatibilityTask extends AsyncTask<Void, Boolean, Boolean> implements Constants {

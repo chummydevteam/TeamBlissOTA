@@ -32,14 +32,14 @@ import android.util.Log;
 import java.util.Iterator;
 import java.util.Set;
 
-import blissroms.updates.utils.OtaUpdates;
 import blissroms.updates.R;
-import blissroms.updates.utils.RomUpdate;
 import blissroms.updates.activities.AddonActivity;
 import blissroms.updates.activities.AvailableActivity;
 import blissroms.updates.tasks.LoadUpdateManifest;
 import blissroms.updates.utils.Constants;
+import blissroms.updates.utils.OtaUpdates;
 import blissroms.updates.utils.Preferences;
+import blissroms.updates.utils.RomUpdate;
 import blissroms.updates.utils.Utils;
 
 public class AppReceiver extends BroadcastReceiver implements Constants {

@@ -17,6 +17,7 @@
 package blissroms.updates.activities;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.content.ActivityNotFoundException;
@@ -42,7 +43,6 @@ import android.util.SparseBooleanArray;
 import blissroms.updates.R;
 import blissroms.updates.utils.Constants;
 import blissroms.updates.utils.Preferences;
-import blissroms.updates.utils.Tools;
 import blissroms.updates.utils.Utils;
 
 @SuppressLint("SdCardPath")
@@ -128,8 +128,7 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
 
             if (key.equals(CURRENT_THEME)) {
                 Preferences.setTheme(mContext, listPref.getValue());
-                Intent intent = new Intent(mContext, MainActivity.class);
-                startActivity(intent);
+                this.recreate();
             } else if (key.equals(UPDATER_BACK_FREQ)) {
                 Utils.setBackgroundCheck(mContext, Preferences.getBackgroundService(mContext));
             }
@@ -138,6 +137,14 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
                 Utils.setBackgroundCheck(mContext, Preferences.getBackgroundService(mContext));
             }
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Intent returnIntent = new Intent();
+        setResult(Activity.RESULT_OK, returnIntent);
+        finish();
     }
 
     @Override

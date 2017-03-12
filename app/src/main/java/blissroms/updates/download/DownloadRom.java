@@ -23,9 +23,9 @@ import android.net.Uri;
 import java.io.File;
 
 import blissroms.updates.R;
-import blissroms.updates.utils.RomUpdate;
 import blissroms.updates.utils.Constants;
 import blissroms.updates.utils.Preferences;
+import blissroms.updates.utils.RomUpdate;
 import blissroms.updates.utils.Utils;
 
 public class DownloadRom implements Constants {

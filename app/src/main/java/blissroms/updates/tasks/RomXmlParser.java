@@ -30,8 +30,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import blissroms.updates.utils.RomUpdate;
 import blissroms.updates.utils.Constants;
+import blissroms.updates.utils.RomUpdate;
 import blissroms.updates.utils.Utils;
 
 class RomXmlParser extends DefaultHandler implements Constants {

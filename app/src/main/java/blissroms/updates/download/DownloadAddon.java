@@ -21,8 +21,8 @@ import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 
-import blissroms.updates.utils.OtaUpdates;
 import blissroms.updates.utils.Constants;
+import blissroms.updates.utils.OtaUpdates;
 import blissroms.updates.utils.Preferences;
 
 public class DownloadAddon implements Constants {
