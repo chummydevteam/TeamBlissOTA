@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "blissroms.updates"
-        minSdkVersion 24
+        minSdkVersion 25
         targetSdkVersion 25
     }
 
