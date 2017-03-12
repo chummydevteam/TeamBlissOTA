@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Nicholas Chum (nicholaschum) and Matt Booth (Kryten2k35).
+ * Copyright (C) 2017 Nicholas Chum (nicholaschum) and Matt Booth (Kryten2k35).
  *
  * Licensed under the Attribution-NonCommercial-ShareAlike 4.0 International 
  * (the "License") you may not use this file except in compliance with the License.
@@ -23,10 +23,7 @@ import android.app.AlertDialog.Builder;
 import android.app.DownloadManager;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -41,7 +38,7 @@ import android.widget.Toast;
 import android.widget.Toolbar;
 
 import blissroms.updates.R;
-import blissroms.updates.RomUpdate;
+import blissroms.updates.utils.RomUpdate;
 import blissroms.updates.download.DownloadRom;
 import blissroms.updates.download.DownloadRomProgress;
 import blissroms.updates.tasks.GenerateRecoveryScript;
@@ -50,24 +47,67 @@ import blissroms.updates.utils.Preferences;
 import blissroms.updates.utils.Tools;
 import blissroms.updates.utils.Utils;
 
+@SuppressLint("StaticFieldLeak")
 public class AvailableActivity extends Activity implements Constants, android.view.View
         .OnClickListener {
 
     public final static String TAG = "AvailableActivity";
     public static ProgressBar mProgressBar;
     public static TextView mProgressCounterText;
-    private static Context mContext;
     private static Button mCheckMD5Button;
     private static Button mDeleteButton;
     private static Button mInstallButton;
     private static Button mDownloadButton;
     private static Button mCancelButton;
-    private static Button mChangelogButton;
+    private Context mContext;
     private Builder mDeleteDialog;
     private Builder mRebootDialog;
     private Builder mRebootManualDialog;
     private Builder mNetworkDialog;
     private DownloadRom mDownloadRom;
+
+    public static void setupProgress(Context context) {
+        if (DEBUGGING)
+            Log.d(TAG, "Setting up Progress Bars");
+        boolean downloadFinished = Preferences.getDownloadFinished(context);
+        if (downloadFinished) {
+            if (DEBUGGING)
+                Log.d(TAG, "Download finished. Setting up Progress Bars accordingly.");
+            String ready = context.getResources().getString(R.string.available_ready_to_install);
+            int color;
+            if (Preferences.getCurrentTheme(context) == 0) { // Light
+                color = context.getColor(R.color.material_deep_teal_500);
+            } else {
+                color = context.getColor(R.color.material_deep_teal_200);
+            }
+            if (mProgressCounterText != null) {
+                mProgressCounterText.setTextColor(color);
+                mProgressCounterText.setText(ready);
+            }
+            if (mProgressBar != null) {
+                mProgressBar.setProgress(100);
+            }
+        } else {
+            if (DEBUGGING)
+                Log.d(TAG, "Download not finished/started. Setting Progress Bars to default.");
+            int fileSize = RomUpdate.getFileSize(context);
+            String fileSizeStr = Utils.formatDataFromBytes(fileSize);
+            if (mProgressCounterText != null) {
+                mProgressCounterText.setText(fileSizeStr);
+            }
+            if (mProgressBar != null) {
+                mProgressBar.setProgress(0);
+            }
+        }
+    }
+
+    public static void updateProgress(int progress, int downloaded, int total) {
+        mProgressBar.setProgress(progress);
+        mProgressCounterText.setText(
+                Utils.formatDataFromBytes(downloaded) +
+                        "/" +
+                        Utils.formatDataFromBytes(total));
+    }
 
     public static void setupMenuToolbar(Context context) {
         boolean downloadFinished = Preferences.getDownloadFinished(context);
@@ -97,10 +137,10 @@ public class AvailableActivity extends Activity implements Constants, android.vi
                 if (md5HasRun && md5Passed) {
                     mCheckMD5Button.setEnabled(false);
                     mCheckMD5Button.setText(R.string.available_md5_ok);
-                } else if (md5HasRun && !md5Passed) {
+                } else if (md5HasRun) {
                     mCheckMD5Button.setEnabled(false);
                     mCheckMD5Button.setText(R.string.available_md5_failed);
-                } else if (!md5HasRun) {
+                } else {
                     mCheckMD5Button.setEnabled(true);
                 }
             } else {
@@ -111,54 +151,6 @@ public class AvailableActivity extends Activity implements Constants, android.vi
             mCancelButton.setVisibility(View.GONE);
             mInstallButton.setVisibility(View.VISIBLE);
         }
-    }
-
-    public static void setupProgress(Context context) {
-        Resources res = context.getResources();
-        if (DEBUGGING)
-            Log.d(TAG, "Setting up Progress Bars");
-        boolean downloadFinished = Preferences.getDownloadFinished(context);
-        if (downloadFinished) {
-            if (DEBUGGING)
-                Log.d(TAG, "Download finished. Setting up Progress Bars accordingly.");
-            String ready = context.getResources().getString(R.string.available_ready_to_install);
-            int color;
-            if (Preferences.getCurrentTheme(context) == 0) { // Light
-                color = context.getResources().getColor(R.color.material_deep_teal_500);
-            } else {
-                color = context.getResources().getColor(R.color.material_deep_teal_200);
-            }
-            if (mProgressCounterText != null) {
-                mProgressCounterText.setTextColor(color);
-                mProgressCounterText.setText(ready);
-            }
-            if (mProgressBar != null) {
-                mProgressBar.setProgress(100);
-            }
-        } else {
-            if (DEBUGGING)
-                Log.d(TAG, "Download not finished/started. Setting Progress Bars to default.");
-            int fileSize = RomUpdate.getFileSize(context);
-            String fileSizeStr = Utils.formatDataFromBytes(fileSize);
-            if (mProgressCounterText != null) {
-                mProgressCounterText.setText(fileSizeStr);
-            }
-            if (mProgressBar != null) {
-                mProgressBar.setProgress(0);
-            }
-        }
-    }
-
-    public static void updateProgress(int progress, int downloaded, int total) {
-        mProgressBar.setProgress((int) progress);
-        mProgressCounterText.setText(
-                Utils.formatDataFromBytes(downloaded) +
-                        "/" +
-                        Utils.formatDataFromBytes(total));
-    }
-
-    public static void invalidateMenu() {
-        ((Activity) mContext).invalidateOptionsMenu();
     }
 
     @SuppressLint("NewApi")
@@ -181,7 +173,7 @@ public class AvailableActivity extends Activity implements Constants, android.vi
         mInstallButton = (Button) findViewById(R.id.menu_available_install);
         mDownloadButton = (Button) findViewById(R.id.menu_available_download);
         mCancelButton = (Button) findViewById(R.id.menu_available_cancel);
-        mChangelogButton = (Button) findViewById(R.id.menu_available_changelog);
+        Button mChangelogButton = (Button) findViewById(R.id.menu_available_changelog);
 
         mCheckMD5Button.setOnClickListener(this);
         mDeleteButton.setOnClickListener(this);
@@ -283,10 +275,10 @@ public class AvailableActivity extends Activity implements Constants, android.vi
                 if (md5HasRun && md5Passed) {
                     md5MenuItem.setEnabled(false);
                     md5MenuItem.setTitle(R.string.available_md5_ok);
-                } else if (md5HasRun && !md5Passed) {
+                } else if (md5HasRun) {
                     md5MenuItem.setEnabled(false);
                     md5MenuItem.setTitle(R.string.available_md5_failed);
-                } else if (!md5HasRun) {
+                } else {
                     md5MenuItem.setEnabled(true);
                 }
             } else {
@@ -340,41 +332,28 @@ public class AvailableActivity extends Activity implements Constants, android.vi
         mDeleteDialog = new AlertDialog.Builder(mContext);
         mDeleteDialog.setTitle(R.string.are_you_sure)
                 .setMessage(R.string.available_delete_confirm_message)
-                .setPositiveButton(R.string.ok, new OnClickListener() {
+                .setPositiveButton(R.string.ok, (dialog, which) -> {
+                    // Proceed to delete the file, and reset most variables
+                    // and layouts
 
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        // Proceed to delete the file, and reset most variables
-                        // and layouts
-
-                        Utils.deleteFile(RomUpdate.getFullFile(mContext)); // Delete the file
-                        Preferences.setHasMD5Run(mContext, false); // MD5 check hasn't been run
-                        Preferences.setDownloadFinished(mContext, false);
-                        setupUpdateNameInfo(); // Update name info
-                        setupProgress(mContext); // Progress goes back to 0
-                        setupMd5Info(); // MD5 goes back to default
-                        setupMenuToolbar(mContext); // Reset options menu
-                    }
+                    Utils.deleteFile(RomUpdate.getFullFile(mContext)); // Delete the file
+                    Preferences.setHasMD5Run(mContext, false); // MD5 check hasn't been run
+                    Preferences.setDownloadFinished(mContext, false);
+                    setupUpdateNameInfo(); // Update name info
+                    setupProgress(mContext); // Progress goes back to 0
+                    setupMd5Info(); // MD5 goes back to default
+                    setupMenuToolbar(mContext); // Reset options menu
                 }).setNegativeButton(R.string.cancel, null);
 
         mRebootDialog = new AlertDialog.Builder(mContext);
         mRebootDialog.setTitle(R.string.are_you_sure)
                 .setMessage(R.string.available_reboot_confirm)
-                .setPositiveButton(R.string.ok, new OnClickListener() {
-
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (DEBUGGING)
-                            Log.d(TAG,
-                                    "ORS is "
-                                            + Preferences
-                                            .getORSEnabled(mContext));
-
-                        if (Preferences.getORSEnabled(mContext)) {
-                            new GenerateRecoveryScript(mContext).execute();
-                        } else {
-                            Tools.recovery(mContext);
-                        }
+                .setPositiveButton(R.string.ok, (dialog, which) -> {
+                    if (DEBUGGING) Log.d(TAG, "ORS is " + Preferences.getORSEnabled(mContext));
+                    if (Preferences.getORSEnabled(mContext)) {
+                        new GenerateRecoveryScript(mContext).execute();
+                    } else {
+                        Tools.recovery(mContext);
                     }
                 }).setNegativeButton(R.string.cancel, null);
 
@@ -382,13 +361,9 @@ public class AvailableActivity extends Activity implements Constants, android.vi
         mNetworkDialog.setTitle(R.string.available_wrong_network_title)
                 .setMessage(R.string.available_wrong_network_message)
                 .setPositiveButton(R.string.ok, null)
-                .setNeutralButton(R.string.settings, new DialogInterface.OnClickListener() {
-
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Intent intent = new Intent(mContext, SettingsActivity.class);
-                        mContext.startActivity(intent);
-                    }
+                .setNeutralButton(R.string.settings, (dialog, which) -> {
+                    Intent intent = new Intent(mContext, SettingsActivity.class);
+                    mContext.startActivity(intent);
                 });
 
         mRebootManualDialog = new AlertDialog.Builder(mContext);
@@ -405,9 +380,9 @@ public class AvailableActivity extends Activity implements Constants, android.vi
 
         int color;
         if (Preferences.getCurrentTheme(mContext) == 0) { // Light
-            color = getResources().getColor(R.color.material_deep_teal_500);
+            color = getColor(R.color.material_deep_teal_500);
         } else {
-            color = getResources().getColor(R.color.material_deep_teal_200);
+            color = getColor(R.color.material_deep_teal_200);
         }
         updateNameInfoText.setTextColor(color);
 
@@ -461,14 +436,14 @@ public class AvailableActivity extends Activity implements Constants, android.vi
         }
     }
 
-    public class MD5Check extends AsyncTask<Object, Boolean, Boolean> {
+    private class MD5Check extends AsyncTask<Object, Boolean, Boolean> {
 
         public final String TAG = this.getClass().getSimpleName();
 
         Context mContext;
         ProgressDialog mMD5CheckDialog;
 
-        public MD5Check(Context context) {
+        MD5Check(Context context) {
             mContext = context;
         }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Nicholas Chum (nicholaschum) and Matt Booth (Kryten2k35).
+ * Copyright (C) 2017 Nicholas Chum (nicholaschum) and Matt Booth (Kryten2k35).
  *
  * Licensed under the Attribution-NonCommercial-ShareAlike 4.0 International 
  * (the "License") you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package blissroms.updates.activities;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -37,7 +37,6 @@ import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
 import android.preference.SwitchPreference;
 import android.text.TextUtils;
-import android.util.Log;
 import android.util.SparseBooleanArray;
 
 import blissroms.updates.R;
@@ -54,7 +53,6 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
     private static final String NOTIFICATIONS_IGNORED_RELEASE = "notifications_ignored_release";
     public final String TAG = this.getClass().getSimpleName();
     private Context mContext;
-    private Builder mInstallPrefsDialog;
     private Preference mInstallPrefs;
     private Preference mAboutActivity;
     private RingtonePreference mRingtonePreference;
@@ -63,7 +61,6 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
 
     private SwitchPreference mIgnoredRelease;
 
-    @SuppressLint("NewApi")
     @Override
     public void onCreate(Bundle savedInstanceState) {
         mContext = this;
@@ -74,10 +71,10 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         addPreferencesFromResource(R.xml.preferences);
 
-        mInstallPrefs = (Preference) findPreference(INSTALL_PREFS);
+        mInstallPrefs = findPreference(INSTALL_PREFS);
         mInstallPrefs.setOnPreferenceClickListener(this);
 
-        mAboutActivity = (Preference) findPreference(ABOUT_ACTIVITY_PREF);
+        mAboutActivity = findPreference(ABOUT_ACTIVITY_PREF);
         mAboutActivity.setOnPreferenceClickListener(this);
 
         mRingtonePreference = (RingtonePreference) findPreference(NOTIFICATIONS_SOUND);
@@ -120,8 +117,8 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
     @Override
     public void onPause() {
         super.onPause();
-        getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener
-                (this);
+        getPreferenceManager().getSharedPreferences()
+                .unregisterOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -150,33 +147,51 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
         if (preference == mInstallPrefs) {
             showInstallPrefs();
         } else if (preference == mAboutActivity) {
-            Intent intent = new Intent(mContext, AboutActivity.class);
-            startActivity(intent);
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            final CharSequence[] items =
+                    getApplicationContext().getResources().getStringArray(R.array.credits);
+            builder.setTitle(R.string.about_credits_title);
+            builder.setItems(items, (dialog, item) -> {
+                switch (item) {
+                    case 0:
+                        try {
+                            String sourceURL = getString(R.string.about_credits_matt_link);
+                            Intent i = new Intent(Intent.ACTION_VIEW);
+                            i.setData(Uri.parse(sourceURL));
+                            startActivity(i);
+                        } catch (ActivityNotFoundException activityNotFoundException) {
+                            //
+                        }
+                        break;
+                    case 1:
+                        try {
+                            String sourceURL = getString(R.string.about_credits_nicholas_link);
+                            Intent i = new Intent(Intent.ACTION_VIEW);
+                            i.setData(Uri.parse(sourceURL));
+                            startActivity(i);
+                        } catch (ActivityNotFoundException activityNotFoundException) {
+                            //
+                        }
+                        break;
+                }
+                dialog.dismiss();
+            });
+            builder.create().show();
         }
         return false;
     }
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
-        boolean result = false;
         if (preference == mRingtonePreference) {
             setRingtoneSummary((String) newValue);
-            result = true;
-        } else if (preference == mIgnoredRelease) {
-            if (!(Boolean) newValue) {
-                if (DEBUGGING) {
-                    Log.d(TAG, "Unignoring release");
-                }
-                setNotIgnore(true);
-            }
+            return true;
         }
-        return result;
+        return false;
     }
 
     private void setNotIgnore(boolean set) {
-        if (set) {
-            Preferences.setIgnoredRelease(mContext, "0");
-        }
+        if (set) Preferences.setIgnoredRelease(mContext, "0");
         mIgnoredRelease.setSummary(
                 getResources().getString(R.string.notification_not_ignoring_release));
         mIgnoredRelease.setChecked(false);
@@ -192,7 +207,7 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
         wipeDalvik = Preferences.getWipeDalvik(mContext);
         deleteAfterInstall = Preferences.getDeleteAfterInstall(mContext);
 
-        // Default value array for the multichoice class.
+        // Default value array for the multi-choice class.
         boolean[] defaultValues = {wipeData, wipeCache, wipeDalvik, deleteAfterInstall};
 
         // Also fill in InstallPrefItems with the default values
@@ -202,24 +217,15 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
         mInstallPrefsItems.put(2, wipeDalvik);
         mInstallPrefsItems.put(3, deleteAfterInstall);
 
-        mInstallPrefsDialog = new AlertDialog.Builder(mContext);
+        Builder mInstallPrefsDialog = new Builder(mContext);
         mInstallPrefsDialog.setTitle(R.string.twrp_ors_install_prefs);
         mInstallPrefsDialog.setMultiChoiceItems(R.array.ors_install_entries, defaultValues,
-                new DialogInterface.OnMultiChoiceClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which,
-                                        boolean isChecked) {
-                        mInstallPrefsItems.put(which, isChecked);
-                    }
-                });
-        mInstallPrefsDialog.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int id) {
-                Preferences.setWipeData(mContext, mInstallPrefsItems.get(0));
-                Preferences.setWipeCache(mContext, mInstallPrefsItems.get(1));
-                Preferences.setWipeDalvik(mContext, mInstallPrefsItems.get(2));
-                Preferences.setDeleteAfterInstall(mContext, mInstallPrefsItems.get(3));
-            }
+                (dialog, which, isChecked) -> mInstallPrefsItems.put(which, isChecked));
+        mInstallPrefsDialog.setPositiveButton(R.string.ok, (dialog, id) -> {
+            Preferences.setWipeData(mContext, mInstallPrefsItems.get(0));
+            Preferences.setWipeCache(mContext, mInstallPrefsItems.get(1));
+            Preferences.setWipeDalvik(mContext, mInstallPrefsItems.get(2));
+            Preferences.setDeleteAfterInstall(mContext, mInstallPrefsItems.get(3));
         });
         mInstallPrefsDialog.show();
     }
@@ -227,7 +233,7 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
     private void setRingtoneSummary(String soundValue) {
         Uri soundUri = TextUtils.isEmpty(soundValue) ? null : Uri.parse(soundValue);
         Ringtone tone = soundUri != null ? RingtoneManager.getRingtone(this, soundUri) : null;
-        mRingtonePreference.setSummary(tone != null ? tone.getTitle(this)
-                : getResources().getString(R.string.silent_ringtone));
+        mRingtonePreference.setSummary(tone != null ? tone.getTitle(this) : getResources()
+                .getString(R.string.silent_ringtone));
     }
 }

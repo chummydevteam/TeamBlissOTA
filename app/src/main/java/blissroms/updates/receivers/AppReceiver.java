@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Nicholas Chum (nicholaschum) and Matt Booth (Kryten2k35).
+ * Copyright (C) 2017 Nicholas Chum (nicholaschum) and Matt Booth (Kryten2k35).
  *
  * Licensed under the Attribution-NonCommercial-ShareAlike 4.0 International 
  * (the "License") you may not use this file except in compliance with the License.
@@ -32,9 +32,9 @@ import android.util.Log;
 import java.util.Iterator;
 import java.util.Set;
 
-import blissroms.updates.OtaUpdates;
+import blissroms.updates.utils.OtaUpdates;
 import blissroms.updates.R;
-import blissroms.updates.RomUpdate;
+import blissroms.updates.utils.RomUpdate;
 import blissroms.updates.activities.AddonActivity;
 import blissroms.updates.activities.AvailableActivity;
 import blissroms.updates.tasks.LoadUpdateManifest;
@@ -60,7 +60,7 @@ public class AppReceiver extends BroadcastReceiver implements Constants {
             Set<Integer> set = OtaUpdates.getAddonDownloadKeySet();
             Iterator<Integer> iterator = set.iterator();
 
-            while (iterator.hasNext() && isAddonDownload != true) {
+            while (iterator.hasNext() && !isAddonDownload) {
                 int nextValue = iterator.next();
                 if (id == OtaUpdates.getAddonDownload(nextValue)) {
                     isAddonDownload = true;
@@ -147,6 +147,7 @@ public class AppReceiver extends BroadcastReceiver implements Constants {
 
             long[] ids = extras.getLongArray(DownloadManager.EXTRA_NOTIFICATION_CLICK_DOWNLOAD_IDS);
 
+            assert ids != null;
             for (long id : ids) {
                 if (id != mRomDownloadID) {
                     if (DEBUGGING)
@@ -207,14 +208,7 @@ public class AppReceiver extends BroadcastReceiver implements Constants {
 
             Handler h = new Handler();
             long delayInMilliseconds = 1500;
-            h.postDelayed(new Runnable() {
-
-                public void run() {
-                    mNotifyManager.cancel(NOTIFICATION_ID);
-                }
-            }, delayInMilliseconds);
+            h.postDelayed(() -> mNotifyManager.cancel(NOTIFICATION_ID), delayInMilliseconds);
         }
     }
 }
-
-

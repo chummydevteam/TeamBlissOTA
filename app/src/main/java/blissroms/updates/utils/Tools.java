@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2015 Matt Booth (Kryten2k35).
+ * Copyright (C) 2017 Nicholas Chum (nicholaschum) and Matt Booth (Kryten2k35).
  *
- * Licensed under the Attribution-NonCommercial-ShareAlike 4.0 International 
+ * Licensed under the Attribution-NonCommercial-ShareAlike 4.0 International
  * (the "License") you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -43,14 +43,11 @@ public class Tools implements Constants {
     public static String shell(String cmd, boolean root) {
         String out = "";
         ArrayList<String> r = system(root ? getSuBin() : "sh", cmd).getStringArrayList("out");
+        assert r != null;
         for (String l : r) {
             out += l + "\n";
         }
         return out;
-    }
-
-    public static void getRoot() {
-        RootTools.isAccessGiven();
     }
 
     public static boolean isRootAvailable() {
@@ -90,8 +87,8 @@ public class Tools implements Constants {
             Log.d(shell, "START");
         }
 
-        ArrayList<String> res = new ArrayList<String>();
-        ArrayList<String> err = new ArrayList<String>();
+        ArrayList<String> res = new ArrayList<>();
+        ArrayList<String> err = new ArrayList<>();
         boolean success = false;
         try {
             Process process = Runtime.getRuntime().exec(shell);
@@ -124,10 +121,7 @@ public class Tools implements Constants {
             }
 
             process.destroy();
-            success = true;
-            if (err.size() > 0) {
-                success = false;
-            }
+            success = err.size() <= 0;
         } catch (IOException e) {
             if (BuildConfig.DEBUG) Log.e(shell, "IOException: " + e.getMessage());
             err.add("IOException: " + e.getMessage());

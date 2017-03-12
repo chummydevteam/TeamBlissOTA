@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Nicholas Chum (nicholaschum) and Matt Booth (Kryten2k35).
+ * Copyright (C) 2017 Nicholas Chum (nicholaschum) and Matt Booth (Kryten2k35).
  *
  * Licensed under the Attribution-NonCommercial-ShareAlike 4.0 International 
  * (the "License") you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import android.net.Uri;
 import java.io.File;
 
 import blissroms.updates.R;
-import blissroms.updates.RomUpdate;
+import blissroms.updates.utils.RomUpdate;
 import blissroms.updates.utils.Constants;
 import blissroms.updates.utils.Preferences;
 import blissroms.updates.utils.Utils;
@@ -31,10 +31,6 @@ import blissroms.updates.utils.Utils;
 public class DownloadRom implements Constants {
 
     public final static String TAG = "DownloadRomUpdate";
-
-    public DownloadRom() {
-
-    }
 
     public void startDownload(Context context) {
         String url = RomUpdate.getDirectUrl(context);

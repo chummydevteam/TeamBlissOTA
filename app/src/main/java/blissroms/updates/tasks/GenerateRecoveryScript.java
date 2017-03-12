@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Nicholas Chum (nicholaschum) and Matt Booth (Kryten2k35).
+ * Copyright (C) 2017 Nicholas Chum (nicholaschum) and Matt Booth (Kryten2k35).
  *
  * Licensed under the Attribution-NonCommercial-ShareAlike 4.0 International 
  * (the "License") you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package blissroms.updates.tasks;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
@@ -24,21 +25,20 @@ import android.util.Log;
 import java.io.File;
 
 import blissroms.updates.R;
-import blissroms.updates.RomUpdate;
+import blissroms.updates.utils.RomUpdate;
 import blissroms.updates.utils.Constants;
 import blissroms.updates.utils.Preferences;
 import blissroms.updates.utils.Tools;
 
 public class GenerateRecoveryScript extends AsyncTask<Void, String, Boolean> implements Constants {
 
-    private static String SCRIPT_FILE = "/cache/recovery/openrecoveryscript";
-    private static String NEW_LINE = "\n";
+    private static final String SCRIPT_FILE = "/cache/recovery/openrecoveryscript";
+    private static final String NEW_LINE = "\n";
     public final String TAG = this.getClass().getSimpleName();
     private Context mContext;
     private ProgressDialog mLoadingDialog;
     private StringBuilder mScript = new StringBuilder();
     private String mFilename;
-    ;
     private String mScriptOutput;
 
     public GenerateRecoveryScript(Context context) {
@@ -46,6 +46,7 @@ public class GenerateRecoveryScript extends AsyncTask<Void, String, Boolean> imp
         mFilename = RomUpdate.getFilename(mContext) + ".zip";
     }
 
+    @SuppressLint("SdCardPath")
     protected void onPreExecute() {
         // Show dialog
         mLoadingDialog = new ProgressDialog(mContext);
@@ -64,12 +65,8 @@ public class GenerateRecoveryScript extends AsyncTask<Void, String, Boolean> imp
             mScript.append("wipe dalvik" + NEW_LINE);
         }
 
-        mScript.append("install /sdcard"
-                + File.separator
-                + OTA_DOWNLOAD_DIR
-                + File.separator
-                + mFilename
-                + NEW_LINE);
+        mScript.append("install /sdcard").append(File.separator).append(OTA_DOWNLOAD_DIR).append
+                (File.separator).append(mFilename).append(NEW_LINE);
 
         File installAfterFlashDir = new File("/sdcard"
                 + File.separator
@@ -78,15 +75,10 @@ public class GenerateRecoveryScript extends AsyncTask<Void, String, Boolean> imp
                 + INSTALL_AFTER_FLASH_DIR);
         File[] filesArr = installAfterFlashDir.listFiles();
         if (filesArr != null && filesArr.length > 0) {
-            for (int i = 0; i < filesArr.length; i++) {
-                mScript.append(NEW_LINE
-                        + "install /sdcard"
-                        + File.separator
-                        + OTA_DOWNLOAD_DIR
-                        + File.separator
-                        + INSTALL_AFTER_FLASH_DIR
-                        + File.separator
-                        + filesArr[i].getName());
+            for (File aFilesArr : filesArr) {
+                mScript.append(NEW_LINE).append("install /sdcard").append(File.separator).append
+                        (OTA_DOWNLOAD_DIR).append(File.separator).append(INSTALL_AFTER_FLASH_DIR)
+                        .append(File.separator).append(aFilesArr.getName());
                 if (DEBUGGING)
                     Log.d(TAG, "install "
                             + "/sdcard"
@@ -95,19 +87,14 @@ public class GenerateRecoveryScript extends AsyncTask<Void, String, Boolean> imp
                             + File.separator
                             + INSTALL_AFTER_FLASH_DIR
                             + File.separator
-                            + filesArr[i].getName());
+                            + aFilesArr.getName());
             }
         }
 
         if (Preferences.getDeleteAfterInstall(mContext)) {
-            mScript.append(NEW_LINE
-                    + "cmd rm -rf "
-                    + "/sdcard"
-                    + File.separator
-                    + OTA_DOWNLOAD_DIR
-                    + File.separator
-                    + mFilename
-                    + NEW_LINE);
+            mScript.append(NEW_LINE).append("cmd rm -rf ").append("/sdcard").append(File
+                    .separator).append(OTA_DOWNLOAD_DIR).append(File.separator).append(mFilename)
+                    .append(NEW_LINE);
         }
 
         mScriptOutput = mScript.toString();

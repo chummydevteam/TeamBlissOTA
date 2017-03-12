@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Matt Booth (Kryten2k35).
+ * Copyright (C) 2017 Nicholas Chum (nicholaschum) and Matt Booth (Kryten2k35).
  *
  * Licensed under the Attribution-NonCommercial-ShareAlike 4.0 International
  * (the "License") you may not use this file except in compliance with the License.
@@ -27,9 +27,6 @@ public class Preferences implements Constants {
     public static final String TAG = "Preferences";
 
     public static String PREF_NAME = "OTAUpdateSettings";
-
-    private Preferences() {
-    }
 
     private static SharedPreferences getPrefs(Context context) {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
@@ -75,12 +72,12 @@ public class Preferences implements Constants {
         return getPrefs(context).getLong(DOWNLOAD_ID, 0L);
     }
 
-    public static String getNotificationSound(Context context) {
+    static String getNotificationSound(Context context) {
         String defValue = android.provider.Settings.System.DEFAULT_NOTIFICATION_URI.toString();
         return getPrefs(context).getString(NOTIFICATIONS_SOUND, defValue);
     }
 
-    public static Boolean getNotificationVibrate(Context context) {
+    static Boolean getNotificationVibrate(Context context) {
         return getPrefs(context).getBoolean(NOTIFICATIONS_VIBRATE, true);
     }
 
@@ -91,7 +88,7 @@ public class Preferences implements Constants {
         return getPrefs(context).getBoolean(UPDATER_BACK_SERVICE, true);
     }
 
-    public static int getBackgroundFrequency(Context context) {
+    static int getBackgroundFrequency(Context context) {
         return Integer.parseInt(getPrefs(context).getString(UPDATER_BACK_FREQ, "43200"));
     }
 
@@ -138,78 +135,78 @@ public class Preferences implements Constants {
     public static void setUpdateLastChecked(Context context, String time) {
         SharedPreferences.Editor editor = getPrefs(context).edit();
         editor.putString(LAST_CHECKED, time);
-        editor.commit();
+        editor.apply();
     }
 
     public static void setDownloadFinished(Context context, boolean value) {
         SharedPreferences.Editor editor = getPrefs(context).edit();
         editor.putBoolean(IS_DOWNLOAD_FINISHED, value);
-        editor.commit();
+        editor.apply();
     }
 
     public static void setTheme(Context context, String value) {
         SharedPreferences.Editor editor = getPrefs(context).edit();
         editor.putString(CURRENT_THEME, value);
-        editor.commit();
+        editor.apply();
     }
 
     public static void setDeleteAfterInstall(Context context, boolean value) {
         SharedPreferences.Editor editor = getPrefs(context).edit();
         editor.putBoolean(DELETE_AFTER_INSTALL, value);
-        editor.commit();
+        editor.apply();
     }
 
     public static void setWipeData(Context context, boolean value) {
         SharedPreferences.Editor editor = getPrefs(context).edit();
         editor.putBoolean(WIPE_DATA, value);
-        editor.commit();
+        editor.apply();
     }
 
     public static void setWipeCache(Context context, boolean value) {
         SharedPreferences.Editor editor = getPrefs(context).edit();
         editor.putBoolean(WIPE_CACHE, value);
-        editor.commit();
+        editor.apply();
     }
 
     public static void setWipeDalvik(Context context, boolean value) {
         SharedPreferences.Editor editor = getPrefs(context).edit();
         editor.putBoolean(WIPE_DALVIK, value);
-        editor.commit();
+        editor.apply();
     }
 
     public static void setMD5Passed(Context context, boolean value) {
         SharedPreferences.Editor editor = getPrefs(context).edit();
         editor.putBoolean(MD5_PASSED, value);
-        editor.commit();
+        editor.apply();
     }
 
     public static void setHasMD5Run(Context context, boolean value) {
         SharedPreferences.Editor editor = getPrefs(context).edit();
         editor.putBoolean(MD5_RUN, value);
-        editor.commit();
+        editor.apply();
     }
 
     public static void setIsDownloadRunning(Context context, boolean value) {
         SharedPreferences.Editor editor = getPrefs(context).edit();
         editor.putBoolean(DOWNLOAD_RUNNING, value);
-        editor.commit();
+        editor.apply();
     }
 
     public static void setDownloadID(Context context, long value) {
         SharedPreferences.Editor editor = getPrefs(context).edit();
         editor.putLong(DOWNLOAD_ID, value);
-        editor.commit();
+        editor.apply();
     }
 
     public static void setIgnoredRelease(Context context, String value) {
         SharedPreferences.Editor editor = getPrefs(context).edit();
         editor.putString(IGNORE_RELEASE_VERSION, value);
-        editor.commit();
+        editor.apply();
     }
 
     public static void setFirstRun(Context context, boolean value) {
         SharedPreferences.Editor editor = getPrefs(context).edit();
         editor.putBoolean(FIRST_RUN, value);
-        editor.commit();
+        editor.apply();
     }
 }

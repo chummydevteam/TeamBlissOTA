@@ -1,7 +1,7 @@
 /*
- * Copyright (C) 2015 Nicholas Chum (nicholaschum) and Matt Booth (Kryten2k35).
+ * Copyright (C) 2017 Nicholas Chum (nicholaschum) and Matt Booth (Kryten2k35).
  *
- * Licensed under the Attribution-NonCommercial-ShareAlike 4.0 International 
+ * Licensed under the Attribution-NonCommercial-ShareAlike 4.0 International
  * (the "License") you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -30,29 +30,29 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import blissroms.updates.RomUpdate;
+import blissroms.updates.utils.RomUpdate;
 import blissroms.updates.utils.Constants;
 import blissroms.updates.utils.Utils;
 
-public class RomXmlParser extends DefaultHandler implements Constants {
+class RomXmlParser extends DefaultHandler implements Constants {
 
     public final String TAG = this.getClass().getSimpleName();
-    boolean tagRomName = false;
-    boolean tagVersionName = false;
-    boolean tagVersionNumber = false;
-    boolean tagDirectUrl = false;
-    boolean tagHttpUrl = false;
-    boolean tagMD5 = false;
-    boolean tagLog = false;
-    boolean tagAndroid = false;
-    boolean tagDeveloper = false;
-    boolean tagWebsite = false;
-    boolean tagDonateUrl = false;
-    boolean tagBitCoinUrl = false;
-    boolean tagFileSize = false;
-    boolean tagRomHut = false;
-    boolean tagAddonsCount = false;
-    boolean tagAddonUrl = false;
+    private boolean tagRomName = false;
+    private boolean tagVersionName = false;
+    private boolean tagVersionNumber = false;
+    private boolean tagDirectUrl = false;
+    private boolean tagHttpUrl = false;
+    private boolean tagMD5 = false;
+    private boolean tagLog = false;
+    private boolean tagAndroid = false;
+    private boolean tagDeveloper = false;
+    private boolean tagWebsite = false;
+    private boolean tagDonateUrl = false;
+    private boolean tagBitCoinUrl = false;
+    private boolean tagFileSize = false;
+    private boolean tagRomHut = false;
+    private boolean tagAddonsCount = false;
+    private boolean tagAddonUrl = false;
     private StringBuffer value = new StringBuffer();
     private Context mContext;
 
@@ -65,9 +65,7 @@ public class RomXmlParser extends DefaultHandler implements Constants {
 
             Utils.setUpdateAvailability(context);
 
-        } catch (ParserConfigurationException ex) {
-            Log.e(TAG, "", ex);
-        } catch (SAXException ex) {
+        } catch (ParserConfigurationException | SAXException ex) {
             Log.e(TAG, "", ex);
         }
     }
@@ -77,18 +75,6 @@ public class RomXmlParser extends DefaultHandler implements Constants {
                              Attributes attributes) throws SAXException {
 
         value.setLength(0);
-
-        if (attributes.getLength() > 0) {
-
-            @SuppressWarnings("unused")
-            String tag = "<" + qName;
-            for (int i = 0; i < attributes.getLength(); i++) {
-
-                tag += " " + attributes.getLocalName(i) + "="
-                        + attributes.getValue(i);
-            }
-            tag += ">";
-        }
 
         if (qName.equalsIgnoreCase("romname")) {
             tagRomName = true;
@@ -160,8 +146,6 @@ public class RomXmlParser extends DefaultHandler implements Constants {
     public void characters(char[] buffer, int start, int length)
             throws SAXException {
         value.append(buffer, start, length);
-        ;
-
     }
 
     public void endElement(String uri, String localName, String qName)
@@ -306,4 +290,3 @@ public class RomXmlParser extends DefaultHandler implements Constants {
         }
     }
 }
-

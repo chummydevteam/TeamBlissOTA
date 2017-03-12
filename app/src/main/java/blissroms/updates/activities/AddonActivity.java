@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2017 Nicholas Chum (nicholaschum) and Matt Booth (Kryten2k35).
+ *
+ * Licensed under the Attribution-NonCommercial-ShareAlike 4.0 International
+ * (the "License") you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package blissroms.updates.activities;
 
 import android.annotation.SuppressLint;
@@ -5,15 +21,14 @@ import android.app.Activity;
 import android.app.AlertDialog.Builder;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -34,9 +49,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
 
-import blissroms.updates.Addon;
+import blissroms.updates.utils.Addon;
 import blissroms.updates.R;
-import blissroms.updates.RomUpdate;
+import blissroms.updates.utils.RomUpdate;
 import blissroms.updates.download.DownloadAddon;
 import blissroms.updates.tasks.AddonXmlParser;
 import blissroms.updates.utils.Constants;
@@ -51,7 +66,6 @@ public class AddonActivity extends Activity implements Constants {
     public static Context mContext;
     private static ListView mListview;
     private static DownloadAddon mDownloadAddon;
-    private static Builder mNetworkDialog;
 
     @SuppressLint("NewApi")
     @Override
@@ -87,7 +101,7 @@ public class AddonActivity extends Activity implements Constants {
 
     public static class AddonsArrayAdapter extends ArrayAdapter<Addon> {
 
-        public AddonsArrayAdapter(Context context, ArrayList<Addon> users) {
+        AddonsArrayAdapter(Context context, ArrayList<Addon> users) {
             super(context, 0, users);
         }
 
@@ -136,17 +150,13 @@ public class AddonActivity extends Activity implements Constants {
         }
 
         private void showNetworkDialog() {
-            mNetworkDialog = new Builder(mContext);
+            Builder mNetworkDialog = new Builder(mContext);
             mNetworkDialog.setTitle(R.string.available_wrong_network_title)
                     .setMessage(R.string.available_wrong_network_message)
                     .setPositiveButton(R.string.ok, null)
-                    .setNeutralButton(R.string.settings, new DialogInterface.OnClickListener() {
-
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            Intent intent = new Intent(mContext, SettingsActivity.class);
-                            mContext.startActivity(intent);
-                        }
+                    .setNeutralButton(R.string.settings, (dialog, which) -> {
+                        Intent intent = new Intent(mContext, SettingsActivity.class);
+                        mContext.startActivity(intent);
                     });
 
             mNetworkDialog.show();
@@ -157,22 +167,20 @@ public class AddonActivity extends Activity implements Constants {
             deleteConfirm.setTitle(R.string.delete);
             deleteConfirm.setMessage(mContext.getResources().getString(R.string.delete_confirm) +
                     "\n\n" + file.getName());
-            deleteConfirm.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    if (file.exists()) {
-                        file.delete();
-                        updateButtons(item.getId(), false);
-                    }
+            deleteConfirm.setPositiveButton(R.string.ok, (dialog, which) -> {
+                if (file.exists()) {
+                    boolean deleted = file.delete();
+                    if (!deleted) Log.e(TAG, "Unable to delete file...");
+                    updateButtons(item.getId(), false);
                 }
             });
             deleteConfirm.setNegativeButton(R.string.cancel, null);
             deleteConfirm.show();
         }
 
+        @NonNull
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
             final Addon item = getItem(position);
             if (convertView == null) {
                 convertView = LayoutInflater.from(getContext()).inflate(R.layout
@@ -187,6 +195,7 @@ public class AddonActivity extends Activity implements Constants {
             final Button cancel = (Button) convertView.findViewById(R.id.cancel_button);
             final Button delete = (Button) convertView.findViewById(R.id.delete_button);
 
+            assert item != null;
             title.setText(item.getTitle());
 
             Bypass byPass = new Bypass(mContext);
@@ -234,44 +243,28 @@ public class AddonActivity extends Activity implements Constants {
                 delete.setVisibility(View.GONE);
             }
 
-            download.setOnClickListener(new OnClickListener() {
+            download.setOnClickListener(v -> {
+                boolean isMobile = Utils.isMobileNetwork(mContext);
+                boolean isSettingWiFiOnly = Preferences.getNetworkType(mContext).equals
+                        (WIFI_ONLY);
 
-                @Override
-                public void onClick(View v) {
-                    boolean isMobile = Utils.isMobileNetwork(mContext);
-                    boolean isSettingWiFiOnly = Preferences.getNetworkType(mContext).equals
-                            (WIFI_ONLY);
-
-                    if (isMobile && isSettingWiFiOnly) {
-                        showNetworkDialog();
-                    } else {
-                        mDownloadAddon.startDownload(mContext, item.getDownloadLink(), item
-                                .getTitle(), item.getId());
-                        download.setVisibility(View.GONE);
-                        cancel.setVisibility(View.VISIBLE);
-                    }
+                if (isMobile && isSettingWiFiOnly) {
+                    showNetworkDialog();
+                } else {
+                    mDownloadAddon.startDownload(mContext, item.getDownloadLink(), item
+                            .getTitle(), item.getId());
+                    download.setVisibility(View.GONE);
+                    cancel.setVisibility(View.VISIBLE);
                 }
             });
 
-            cancel.setOnClickListener(new OnClickListener() {
-
-                @Override
-                public void onClick(View v) {
-                    mDownloadAddon.cancelDownload(mContext, item.getId());
-                    download.setVisibility(View.VISIBLE);
-                    cancel.setVisibility(View.GONE);
-                    updateProgress(item.getId(), 0, true);
-                }
+            cancel.setOnClickListener(v -> {
+                mDownloadAddon.cancelDownload(mContext, item.getId());
+                download.setVisibility(View.VISIBLE);
+                cancel.setVisibility(View.GONE);
+                updateProgress(item.getId(), 0, true);
             });
-
-            delete.setOnClickListener(new OnClickListener() {
-
-                @Override
-                public void onClick(View v) {
-                    deleteConfirm(file, item);
-                }
-            });
-
+            delete.setOnClickListener(v -> deleteConfirm(file, item));
             return convertView;
         }
     }
@@ -284,7 +277,7 @@ public class AddonActivity extends Activity implements Constants {
 
         private Context mContext;
 
-        public LoadAddonManifest(Context context) {
+        LoadAddonManifest(Context context) {
             mContext = context;
         }
 
@@ -301,7 +294,8 @@ public class AddonActivity extends Activity implements Constants {
             // Delete any existing manifest file before we attempt to download a new one
             File manifest = new File(mContext.getFilesDir().getPath(), MANIFEST);
             if (manifest.exists()) {
-                manifest.delete();
+                boolean deleted = manifest.delete();
+                if (!deleted) Log.e(TAG, "Unable to delete manifest file...");
             }
         }
 
@@ -309,7 +303,7 @@ public class AddonActivity extends Activity implements Constants {
         protected ArrayList<Addon> doInBackground(Object... param) {
 
             try {
-                InputStream input = null;
+                InputStream input;
 
                 URL url = new URL((String) param[0]);
                 URLConnection connection = url.openConnection();
@@ -332,7 +326,7 @@ public class AddonActivity extends Activity implements Constants {
 
                 // file finished downloading, parse it!
                 AddonXmlParser parser = new AddonXmlParser();
-                return parser.parse(new File(mContext.getFilesDir(), MANIFEST), mContext);
+                return parser.parse(new File(mContext.getFilesDir(), MANIFEST));
             } catch (Exception e) {
                 Log.d(TAG, "Exception: " + e.getMessage());
             }

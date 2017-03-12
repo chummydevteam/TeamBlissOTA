@@ -1,6 +1,21 @@
+/*
+ * Copyright (C) 2017 Nicholas Chum (nicholaschum) and Matt Booth (Kryten2k35).
+ *
+ * Licensed under the Attribution-NonCommercial-ShareAlike 4.0 International
+ * (the "License") you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package blissroms.updates.tasks;
 
-import android.content.Context;
 import android.util.Log;
 
 import org.xml.sax.Attributes;
@@ -15,25 +30,25 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import blissroms.updates.Addon;
+import blissroms.updates.utils.Addon;
 import blissroms.updates.utils.Constants;
 
 public class AddonXmlParser extends DefaultHandler implements Constants {
 
     private final String TAG = this.getClass().getSimpleName();
-    boolean tagAddon = false;
-    boolean tagId = false;
-    boolean tagTitle = false;
-    boolean tagDesc = false;
-    boolean tagUpdatedAt = false;
-    boolean tagSize = false;
-    boolean tagDownloadLink = false;
-    private ArrayList<Addon> mAddons = new ArrayList<Addon>();
+    private boolean tagAddon = false;
+    private boolean tagId = false;
+    private boolean tagTitle = false;
+    private boolean tagDesc = false;
+    private boolean tagUpdatedAt = false;
+    private boolean tagSize = false;
+    private boolean tagDownloadLink = false;
+    private ArrayList<Addon> mAddons = new ArrayList<>();
     private Addon mAddon;
     private StringBuffer value = new StringBuffer();
     private int id;
 
-    public ArrayList<Addon> parse(File xmlFile, Context context) throws IOException {
+    public ArrayList<Addon> parse(File xmlFile) throws IOException {
 
         try {
             id = 1;
@@ -43,9 +58,7 @@ public class AddonXmlParser extends DefaultHandler implements Constants {
 
             return mAddons;
 
-        } catch (ParserConfigurationException ex) {
-            Log.e(TAG, "", ex);
-        } catch (SAXException ex) {
+        } catch (ParserConfigurationException | SAXException ex) {
             Log.e(TAG, "", ex);
         }
 
@@ -57,18 +70,6 @@ public class AddonXmlParser extends DefaultHandler implements Constants {
                              Attributes attributes) throws SAXException {
 
         value.setLength(0);
-
-        if (attributes.getLength() > 0) {
-
-            @SuppressWarnings("unused")
-            String tag = "<" + qName;
-            for (int i = 0; i < attributes.getLength(); i++) {
-
-                tag += " " + attributes.getLocalName(i) + "="
-                        + attributes.getValue(i);
-            }
-            tag += ">";
-        }
 
         if (qName.equalsIgnoreCase("addon")) {
             mAddon = new Addon();

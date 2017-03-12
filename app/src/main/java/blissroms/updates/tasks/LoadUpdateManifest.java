@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Nicholas Chum (nicholaschum) and Matt Booth (Kryten2k35).
+ * Copyright (C) 2017 Nicholas Chum (nicholaschum) and Matt Booth (Kryten2k35).
  *
  * Licensed under the Attribution-NonCommercial-ShareAlike 4.0 International 
  * (the "License") you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ public class LoadUpdateManifest extends AsyncTask<Void, Void, Void> implements C
     private static final String MANIFEST = "update_manifest.xml";
     public final String TAG = this.getClass().getSimpleName();
     // Did this come from the BackgroundReceiver class?
-    boolean shouldUpdateForegroundApp;
+    private boolean shouldUpdateForegroundApp;
     private Context mContext;
     private ProgressDialog mLoadingDialog;
 
@@ -59,7 +59,8 @@ public class LoadUpdateManifest extends AsyncTask<Void, Void, Void> implements C
 
         File manifest = new File(mContext.getFilesDir().getPath(), MANIFEST);
         if (manifest.exists()) {
-            manifest.delete();
+            boolean deleted = manifest.delete();
+            if (!deleted) Log.e(TAG, "Could not delete manifest file...");
         }
     }
 
@@ -67,7 +68,7 @@ public class LoadUpdateManifest extends AsyncTask<Void, Void, Void> implements C
     protected Void doInBackground(Void... v) {
 
         try {
-            InputStream input = null;
+            InputStream input;
 
             URL url = new URL(Utils.getProp("ro.ota.manifest"));
             URLConnection connection = url.openConnection();

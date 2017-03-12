@@ -1,7 +1,22 @@
+/*
+ * Copyright (C) 2017 Nicholas Chum (nicholaschum) and Matt Booth (Kryten2k35).
+ *
+ * Licensed under the Attribution-NonCommercial-ShareAlike 4.0 International
+ * (the "License") you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package blissroms.updates.download;
 
 import android.app.DownloadManager;
-import android.content.Context;
 import android.database.Cursor;
 import android.database.CursorIndexOutOfBoundsException;
 import android.os.AsyncTask;
@@ -10,14 +25,14 @@ import android.util.Log;
 import blissroms.updates.activities.AddonActivity;
 import blissroms.updates.utils.Constants;
 
-public class DownloadAddonProgress extends AsyncTask<Long, Integer, Void> implements Constants {
+class DownloadAddonProgress extends AsyncTask<Long, Integer, Void> implements Constants {
     public final String TAG = this.getClass().getSimpleName();
 
     private DownloadManager mDownloadManager;
     private int mViewId;
     private boolean mIsRunning = true;
 
-    public DownloadAddonProgress(Context context, DownloadManager downloadManager, int id) {
+    DownloadAddonProgress(DownloadManager downloadManager, int id) {
         mDownloadManager = downloadManager;
         mViewId = id;
     }
@@ -50,17 +65,14 @@ public class DownloadAddonProgress extends AsyncTask<Long, Integer, Void> implem
                 final int bytesInTotal = cursor.getInt(cursor
                         .getColumnIndex(DownloadManager.COLUMN_TOTAL_SIZE_BYTES));
 
-                final int progressPercent = (int) ((bytesDownloaded * 100l) / bytesInTotal);
+                final int progressPercent = (int) ((bytesDownloaded * 100L) / bytesInTotal);
 
                 if (progressPercent != previousValue) {
                     // Only publish every 1%, to reduce the amount of work being done.
                     publishProgress(progressPercent, bytesDownloaded, bytesInTotal);
                     previousValue = progressPercent;
                 }
-            } catch (CursorIndexOutOfBoundsException e) {
-                Log.e(TAG, " " + e.getMessage());
-                mIsRunning = false;
-            } catch (ArithmeticException e) {
+            } catch (CursorIndexOutOfBoundsException | ArithmeticException e) {
                 Log.e(TAG, " " + e.getMessage());
                 mIsRunning = false;
             }

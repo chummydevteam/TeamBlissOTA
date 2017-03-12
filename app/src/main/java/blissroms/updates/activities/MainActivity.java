@@ -23,8 +23,6 @@ import android.app.AlertDialog.Builder;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -52,7 +50,7 @@ import java.util.Date;
 import java.util.Locale;
 
 import blissroms.updates.R;
-import blissroms.updates.RomUpdate;
+import blissroms.updates.utils.RomUpdate;
 import blissroms.updates.tasks.Changelog;
 import blissroms.updates.tasks.LoadUpdateManifest;
 import blissroms.updates.utils.Constants;
@@ -137,13 +135,8 @@ public class MainActivity extends Activity implements Constants,
             Builder notConnectedDialog = new Builder(mContext);
             notConnectedDialog.setTitle(R.string.main_not_connected_title)
                     .setMessage(R.string.main_not_connected_message)
-                    .setPositiveButton(R.string.ok, new OnClickListener() {
-
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            ((Activity) mContext).finish();
-                        }
-                    })
+                    .setPositiveButton(R.string.ok, (dialog, which) -> ((Activity) mContext)
+                            .finish())
                     .show();
         } else {
             if (ENABLE_COMPATIBILITY_CHECK) new CompatibilityTask(mContext).execute();
@@ -192,12 +185,8 @@ public class MainActivity extends Activity implements Constants,
                     new AlertDialog.Builder(this)
                             .setTitle(R.string.permission_not_granted_dialog_title)
                             .setMessage(R.string.permission_not_granted_dialog_message)
-                            .setPositiveButton(R.string.dialog_ok, new OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    MainActivity.this.finish();
-                                }
-                            }).show();
+                            .setPositiveButton(R.string.dialog_ok, (dialog, which) ->
+                                    MainActivity.this.finish()).show();
                     return;
                 }
                 break;
@@ -234,76 +223,51 @@ public class MainActivity extends Activity implements Constants,
         mCompatibilityDialog.setCancelable(false);
         mCompatibilityDialog.setTitle(R.string.main_not_compatible_title);
         mCompatibilityDialog.setMessage(R.string.main_not_compatible_message);
-        mCompatibilityDialog.setPositiveButton(R.string.ok, new OnClickListener() {
-
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                MainActivity.this.finish();
-            }
-        });
+        mCompatibilityDialog.setPositiveButton(R.string.ok, (dialog, which) -> MainActivity.this
+                .finish());
 
         // Donate Dialog
         mDonateDialog = new AlertDialog.Builder(this);
         String[] donateItems = {"PayPal", "BitCoin"};
         mDonateDialog.setTitle(getResources().getString(R.string.donate))
                 .setSingleChoiceItems(donateItems, 0, null)
-                .setPositiveButton(getResources().getString(R.string.ok), new DialogInterface
-                        .OnClickListener() {
+                .setPositiveButton(getResources().getString(R.string.ok), (dialog, which) -> {
+                    String url;
+                    int selectedPosition = ((AlertDialog) dialog).getListView()
+                            .getCheckedItemPosition();
+                    if (selectedPosition == 0) {
+                        url = RomUpdate.getDonateLink(mContext);
+                    } else {
+                        url = RomUpdate.getBitCoinLink(mContext);
+                    }
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse(url));
 
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        String url;
-                        int selectedPosition = ((AlertDialog) dialog).getListView()
-                                .getCheckedItemPosition();
-                        if (selectedPosition == 0) {
-                            url = RomUpdate.getDonateLink(mContext);
-                        } else {
-                            url = RomUpdate.getBitCoinLink(mContext);
-                        }
-                        Intent intent = new Intent(Intent.ACTION_VIEW);
-                        intent.setData(Uri.parse(url));
-
-                        try {
-                            startActivity(intent);
-                        } catch (ActivityNotFoundException ex) {
-                            // Nothing to handle BitCoin payments. Send to Play Store
-                            if (DEBUGGING)
-                                Log.d(TAG, ex.getMessage());
-                            mPlayStoreDialog.show();
-                        }
+                    try {
+                        startActivity(intent);
+                    } catch (ActivityNotFoundException ex) {
+                        // Nothing to handle BitCoin payments. Send to Play Store
+                        if (DEBUGGING)
+                            Log.d(TAG, ex.getMessage());
+                        mPlayStoreDialog.show();
                     }
                 })
-                .setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface
-                        .OnClickListener() {
-
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                });
+                .setNegativeButton(getResources().getString(R.string.cancel), (dialog, which) ->
+                        dialog.cancel());
 
         mPlayStoreDialog = new AlertDialog.Builder(mContext);
         mPlayStoreDialog.setCancelable(true);
         mPlayStoreDialog.setTitle(R.string.main_playstore_title);
         mPlayStoreDialog.setMessage(R.string.main_playstore_message);
-        mPlayStoreDialog.setPositiveButton(R.string.ok, new OnClickListener() {
-
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                String url = "https://play.google.com/store/search?q=bitcoin%20wallet&c=apps";
-                intent.setData(Uri.parse(url));
-                startActivity(intent);
-            }
+        mPlayStoreDialog.setPositiveButton(R.string.ok, (dialog, which) -> {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            String url = "https://play.google.com/store/search?q=bitcoin%20wallet&c=apps";
+            intent.setData(Uri.parse(url));
+            startActivity(intent);
         });
-        mPlayStoreDialog.setNegativeButton(getResources().getString(R.string.cancel), new
-                DialogInterface.OnClickListener() {
-
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
-                    }
-                });
+        mPlayStoreDialog.setNegativeButton(getResources().getString(R.string.cancel), (dialog,
+                                                                                       which) ->
+                dialog.cancel());
     }
 
     @SuppressWarnings("deprecation")

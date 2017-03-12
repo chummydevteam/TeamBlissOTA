@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Matt Booth (Kryten2k35).
+ * Copyright (C) 2017 Nicholas Chum (nicholaschum) and Matt Booth (Kryten2k35).
  *
  * Licensed under the Attribution-NonCommercial-ShareAlike 4.0 International 
  * (the "License") you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ import java.text.DecimalFormat;
 import java.util.Calendar;
 
 import blissroms.updates.R;
-import blissroms.updates.RomUpdate;
 import blissroms.updates.activities.AvailableActivity;
 import blissroms.updates.activities.MainActivity;
 import blissroms.updates.receivers.AppReceiver;
@@ -80,13 +79,13 @@ public class Utils implements Constants {
     }
 
     public static String getProp(String propName) {
-        Process p = null;
+        Process p;
         String result = "";
         try {
             p = new ProcessBuilder("/system/bin/getprop", propName).redirectErrorStream(true)
                     .start();
             BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            String line = "";
+            String line;
             while ((line = br.readLine()) != null) {
                 result = line;
             }
@@ -186,8 +185,7 @@ public class Utils implements Constants {
         if (cm != null) {
             NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
             if (activeNetwork != null) {
-                isConnected = activeNetwork != null &&
-                        activeNetwork.isConnectedOrConnecting();
+                isConnected = activeNetwork.isConnectedOrConnecting();
             }
         }
         return isConnected;
@@ -236,11 +234,8 @@ public class Utils implements Constants {
         String manifestVer = Integer.toString(otaVersion);
 
         boolean available;
-        if (Preferences.getIgnoredRelease(context).matches(manifestVer)) {
-            available = false;
-        } else {
-            available = DEBUG_NOTIFICATIONS ? true : versionBiggerThan(currentVer, manifestVer);
-        }
+        available = !Preferences.getIgnoredRelease(context).matches(manifestVer) &&
+                (DEBUG_NOTIFICATIONS || versionBiggerThan(currentVer, manifestVer));
 
         RomUpdate.setUpdateAvailable(context, available);
         if (DEBUGGING)
@@ -292,9 +287,5 @@ public class Utils implements Constants {
         }
 
         mNotifyManager.notify(NOTIFICATION_ID, mBuilder.build());
-    }
-
-    public static String getRemovableMediaPath() {
-        return Tools.shell("echo ${SECONDARY_STORAGE%%:*}", false);
     }
 }

@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2017 Nicholas Chum (nicholaschum) and Matt Booth (Kryten2k35).
+ *
+ * Licensed under the Attribution-NonCommercial-ShareAlike 4.0 International
+ * (the "License") you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://creativecommons.org/licenses/by-nc-sa/4.0/legalcode
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package blissroms.updates.tasks;
 
 import android.app.Activity;
@@ -26,7 +42,7 @@ import in.uncod.android.bypass.Bypass;
 public class Changelog extends AsyncTask<Void, Void, String> {
 
     private static final String CHANGELOG = "Changelog.md";
-    private static final String TAG = "AboutActivity.Changelog";
+    private static final String TAG = "Changelog";
     private ProgressDialog mLoadingDialog;
     private File mChangelogFile;
     private Context mContext;
@@ -58,7 +74,8 @@ public class Changelog extends AsyncTask<Void, Void, String> {
         // Delete any existing manifest file before we attempt to download a new one
         mChangelogFile = new File(mContext.getFilesDir().getPath(), CHANGELOG);
         if (mChangelogFile.exists()) {
-            mChangelogFile.delete();
+            boolean deleted = mChangelogFile.delete();
+            if (!deleted) Log.e(TAG, "Could not delete manifest file...");
         }
     }
 
@@ -66,7 +83,7 @@ public class Changelog extends AsyncTask<Void, Void, String> {
     protected String doInBackground(Void... params) {
         if (mRemote) {
             try {
-                InputStream input = null;
+                InputStream input;
 
                 URL url = new URL(mChangelog);
                 URLConnection connection = url.openConnection();
@@ -112,7 +129,7 @@ public class Changelog extends AsyncTask<Void, Void, String> {
                     if (inputReader != null) {
                         inputReader.close();
                     }
-                } catch (IOException e) {
+                } catch (IOException ignored) {
                 }
             }
             return text;

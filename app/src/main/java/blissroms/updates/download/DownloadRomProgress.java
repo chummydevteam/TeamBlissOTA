@@ -1,5 +1,5 @@
-/*/*
- * Copyright (C) 2015 Nicholas Chum (nicholaschum) and Matt Booth (Kryten2k35).
+/*
+ * Copyright (C) 2017 Nicholas Chum (nicholaschum) and Matt Booth (Kryten2k35).
  *
  * Licensed under the Attribution-NonCommercial-ShareAlike 4.0 International 
  * (the "License") you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import android.database.Cursor;
 import android.database.CursorIndexOutOfBoundsException;
 import android.os.AsyncTask;
 import android.util.Log;
+
+import java.util.Arrays;
 
 import blissroms.updates.activities.AvailableActivity;
 import blissroms.updates.activities.MainActivity;
@@ -61,7 +63,7 @@ public class DownloadRomProgress extends AsyncTask<Long, Integer, Void> implemen
                     Preferences.setIsDownloadRunning(mContext, false);
                 }
 
-                final int progressPercent = (int) ((bytesDownloaded * 100l) / bytesInTotal);
+                final int progressPercent = (int) ((bytesDownloaded * 100L) / bytesInTotal);
 
                 if (progressPercent != previousValue) {
                     // Only publish every 1%, to reduce the amount of work being done.
@@ -72,7 +74,7 @@ public class DownloadRomProgress extends AsyncTask<Long, Integer, Void> implemen
                 Preferences.setIsDownloadRunning(mContext, false);
             } catch (ArithmeticException e) {
                 Preferences.setIsDownloadRunning(mContext, false);
-                Log.e(TAG, " " + e.getStackTrace());
+                Log.e(TAG, Arrays.toString(e.getStackTrace()));
             }
             cursor.close();
         }
