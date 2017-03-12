@@ -62,7 +62,7 @@ public class MainActivity extends Activity implements Constants,
         ActivityCompat.OnRequestPermissionsResultCallback {
 
     private static final int PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
-    private static final boolean ENABLE_COMPATIBILITY_CHECK = false;
+    private static final boolean ENABLE_COMPATIBILITY_CHECK = true;
     public static boolean hasRoot;
     @SuppressLint("StaticFieldLeak")
     private static ProgressBar mProgressBar;
