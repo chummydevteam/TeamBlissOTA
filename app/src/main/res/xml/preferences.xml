@@ -32,12 +32,6 @@
         android:summary="@string/twrp_ors_install_prefs_summary"
         android:title="@string/twrp_ors_install_prefs"/>
 
-    <Preference
-        android:dependency="updater_twrp_ors"
-        android:key="updater_twrp_ors_information"
-        android:selectable="false"
-        android:summary="@string/twrp_ors_information"/>
-
     <!-- Background update service -->
     <PreferenceCategory
         android:key="updater_ors_screen_title"

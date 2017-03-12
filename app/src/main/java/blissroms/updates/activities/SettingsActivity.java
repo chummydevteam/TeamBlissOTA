@@ -84,25 +84,23 @@ public class SettingsActivity extends PreferenceActivity implements OnPreference
                 (NOTIFICATIONS_SOUND, defValue);
         setRingtoneSummary(soundValue);
 
-        if (!Tools.isRootAvailable()) {
-            SwitchPreference ors = (SwitchPreference) findPreference("updater_twrp_ors");
-            ors.setEnabled(false);
-        }
-
         mIgnoredRelease = (SwitchPreference) findPreference(NOTIFICATIONS_IGNORED_RELEASE);
         mIgnoredRelease.setOnPreferenceChangeListener(this);
         String ignoredRelease = Preferences.getIgnoredRelease(mContext);
         boolean isIgnored = ignoredRelease.equalsIgnoreCase("0");
         if (!isIgnored) {
             mIgnoredRelease.setSummary(
-                    getResources().getString(R.string.notification_ignoring_release) +
-                            " " +
-                            ignoredRelease);
+                    getString(R.string.notification_ignoring_release) + " " + ignoredRelease);
             mIgnoredRelease.setChecked(true);
             mIgnoredRelease.setEnabled(true);
             mIgnoredRelease.setSelectable(true);
         } else {
             setNotIgnore(false);
+        }
+
+        if (!MainActivity.hasRoot) {
+            SwitchPreference ors = (SwitchPreference) findPreference("updater_twrp_ors");
+            ors.setEnabled(false);
         }
     }
 

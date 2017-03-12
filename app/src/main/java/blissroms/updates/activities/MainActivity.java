@@ -55,6 +55,7 @@ import blissroms.updates.tasks.Changelog;
 import blissroms.updates.tasks.LoadUpdateManifest;
 import blissroms.updates.utils.Constants;
 import blissroms.updates.utils.Preferences;
+import blissroms.updates.utils.Tools;
 import blissroms.updates.utils.Utils;
 
 public class MainActivity extends Activity implements Constants,
@@ -62,6 +63,7 @@ public class MainActivity extends Activity implements Constants,
 
     private static final int PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
     private static final boolean ENABLE_COMPATIBILITY_CHECK = false;
+    public static boolean hasRoot;
     @SuppressLint("StaticFieldLeak")
     private static ProgressBar mProgressBar;
     @SuppressLint("StaticFieldLeak")
@@ -159,6 +161,15 @@ public class MainActivity extends Activity implements Constants,
             ActivityCompat.requestPermissions(this,
                     new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
+        }
+        new checkRoot().execute("");
+    }
+
+    static class checkRoot extends AsyncTask<String, Integer, String> {
+        @Override
+        protected String doInBackground(String... sUrl) {
+            hasRoot = Tools.isRootAvailable();
+            return null;
         }
     }
 
